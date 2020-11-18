@@ -25,7 +25,7 @@ import (
 // this provider just extract .csv file into informations.
 
 var (
-	channel   = flag.String("channel", "3", "Retrieving channel type(default 3, support comma separated)")
+	channel   = flag.String("channel", "", "Retrieving channel type(default all, support comma separated)")
 	local     = flag.String("local", "", "Specify Local Synerex Server")
 	extfile   = flag.String("file", "", "Extract file name") // only one file
 	startDate = flag.String("startDate", "02-07", "Specify Start Date")
@@ -168,7 +168,7 @@ func sendingStoredFile(clients map[int]bool) {
 			// if channel in channels
 			chnum, err := strconv.Atoi(token[4])
 			_, ok := clients[chnum]
-			if ok && err == nil { // if there is channel
+			if ok && err == nil || *channel == "" { // if there is channel
 				//				_, nerr := NotifySupplyWithTime(client, &smo, tsProto)
 				//				log.Printf("Sent OK! %#v\n", smo)
 				//				fmt.Printf("ts:%s,chan:%s,%s,%s,%s,len:%d", tm.Format(time.RFC3339), token[4], token[5], token[6], token[7], len(token[8]))
@@ -283,14 +283,17 @@ func main() {
 
 	// check channel types.
 	//
+
 	chans := strings.Split(*channel, ",")
 	pcClients := make(map[int]bool)
-	for _, ch := range chans {
-		v, err := strconv.Atoi(ch)
-		if err == nil {
-			pcClients[v] = true
-		} else {
-			log.Fatal("Can't convert channels ", *channel)
+	if *channel != "" {
+		for _, ch := range chans {
+			v, err := strconv.Atoi(ch)
+			if err == nil {
+				pcClients[v] = true
+			} else {
+				log.Fatal("Can't convert channels ", *channel)
+			}
 		}
 	}
 
